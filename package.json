@@ -9,7 +9,10 @@
   "author": "Terrance Khuamlo",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "bson": "^4.0.0",
-    "mongodb": "^2.2.5"
+    "express": "^4.16.4",
+    "mongodb": "^2.2.5",
+    "mongoose": "^5.3.13"
   }
 }
