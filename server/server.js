@@ -14,6 +14,7 @@ let app = express();
 //middle ware to use on express
 app.use(bodyParser.json());
 
+//POST REQUEST ADDS DATA
 app.post("/todos", (req, res)=>{
     
     console.log(req.body);
@@ -27,6 +28,18 @@ app.post("/todos", (req, res)=>{
         })
         .catch(e =>{
             res.status(400).send(e);
+        });
+    
+});
+//GET REQUEST FETCHES DATA
+app.get("/todos", (req, res)=>{
+    console.log(res.body);
+    Todo.find()
+        .then(todos=>{
+            res.send({todos});
+        })
+        .catch( e=>{
+            res.status(400).send();
         });
     
 });
