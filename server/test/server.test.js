@@ -2,52 +2,76 @@ const expect = require("expect");
 const request = require("supertest");
 /**TEST LIBRARIES */
 
-const {app} = require("./../server");
-const {Todo} = require("./../models/todo");
+const { app } = require("./../server");
+const { Todo } = require("./../models/todo");
 
-beforeEach(done=>{
-    Todo.deleteMany({}).then(()=> done());
-})
+//DUMMY VALUES FOR SEEDING DATA
+const todos = [
+  {
+    text: "First test todo"
+  },
+  {
+    text: "Second test todo"
+  }
+];
 
-describe("POST /todos", ()=>{
+beforeEach(done => {
+  Todo.deleteMany({})
+      .then(() => Todo.insertMany(todos))
+      .then(()=> done());
+});
 
-    it("Should create a new TODO", (done)=>{
-        let text = "Test todo text";
+describe("POST /todos", () => {
+  it("Should create a new TODO", done => {
+    let text = "Test todo text";
 
+    request(app)
+      .post("/todos")
+      .send({ text })
+      .expect(200)
+      .expect(res => {
+        expect(res.body.text).toBe(text);
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+
+        Todo.find({text})
+          .then(todos => {
+            expect(todos.length).toBe(1);
+            expect(todos[0].text).toBe(text);
+            done();
+          })
+          .catch(e => done(e));
+      });
+  });
+
+  it("Should not create todo with invalid body data", done => {
+    request(app)
+      .post("/todos")
+      .send({})
+      .expect(400)
+      .end((err, res) => {
+        if (err) return done(err);
+
+        Todo.find()
+          .then(todos => {
+            expect(todos.length).toBe(2);
+            done();
+          })
+          .catch(e => done(e));
+      });
+  });
+});
+
+describe("GET /todos ROuter", ()=>{
+
+    it("Should get all todos", done=>{
         request(app)
-            .post("/todos")
-            .send({text})
+            .get("/todos")
             .expect(200)
             .expect(res=>{
-                expect(res.body.text).toBe(text);
+                expect(res.body.todos.length).toBe(2);
             })
-            .end((err, res)=>{
-                if(err)
-                    return done(err);
-
-                Todo.find().then(todos=>{
-                    expect(todos.length).toBe(1);
-                    expect(todos[0].text).toBe(text);
-                    done();
-                }).catch(e=>done(e));
-            })
-    });
-
-    it("Should not create todo with invalid body data", done=>{
-
-        request(app)
-            .post("/todos")
-            .send({})
-            .expect(400)
-            .end((err, res)=>{
-                if(err)
-                    return done(err);
-
-                Todo.find().then(todos=>{
-                    expect(todos.length).toBe(0);
-                    done();
-                })
-                .catch(e=>done(e));
-            });
+            .end(done);
     });
 });
